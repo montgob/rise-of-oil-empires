@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -98,4 +99,18 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  .shadow-glow {
+    box-shadow: 0 0 10px 2px currentColor;
+  }
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }
