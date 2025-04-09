@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,7 +45,6 @@ export default function FeedbackSection({
   section,
   title = "Feedback",
 }: FeedbackSectionProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
@@ -161,10 +159,10 @@ export default function FeedbackSection({
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user && !name) {
+    if (!name) {
       toast({
         title: "Name required",
-        description: "Please enter your name or sign in to submit a comment.",
+        description: "Please enter your name to submit a comment.",
         variant: "destructive",
       });
       return;
@@ -225,18 +223,16 @@ export default function FeedbackSection({
           </div>
           <div className="border-t border-amber-900/20 pt-4">
             <form onSubmit={handleCommentSubmit} className="space-y-4">
-              {!user && (
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-slate-200">Your Name</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="bg-slate-700/50 border-amber-900/20 text-slate-100"
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-slate-200">Your Name</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="bg-slate-700/50 border-amber-900/20 text-slate-100"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="comment" className="text-slate-200">Your Comment</Label>
                 <Textarea
