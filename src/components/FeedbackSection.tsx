@@ -1,21 +1,26 @@
 
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
-import { MessageSquare, Star, StarIcon } from "lucide-react";
+import {
+  MessageSquare,
+  Star,
+  ThumbsUp,
+  User,
+} from "lucide-react";
 
 interface Comment {
   id: string;
@@ -37,36 +42,27 @@ interface FeedbackSectionProps {
   title?: string;
 }
 
-export default function FeedbackSection({ section, title = "Visitor Feedback" }: FeedbackSectionProps) {
+export default function FeedbackSection({
+  section,
+  title = "Feedback",
+}: FeedbackSectionProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
-  const [rating, setRating] = useState(0);
-  const [hoveredRating, setHoveredRating] = useState(0);
+  const [rating, setRating] = useState<number>(5);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch comments for this section
-  const { data: comments, refetch: refetchComments } = useQuery({
-    queryKey: ['comments', section],
+  // Get average rating for this section
+  const { data: averageRating } = useQuery({
+    queryKey: ["ratings", section, "average"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('visitor_comments')
-        .select('*')
-        .eq('section', section)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as Comment[];
-    },
-  });
+        .from("visitor_ratings")
+        .select("*")
+        .eq("section", section);
 
-  // Fetch average rating
-  const { data: ratingData, refetch: refetchRatings } = useQuery({
-    queryKey: ['ratings', section],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('visitor_ratings')
-        .select('rating')
-        .eq('section', section);
-      
       if (error) throw error;
       
       if (data && data.length > 0) {
@@ -81,164 +77,203 @@ export default function FeedbackSection({ section, title = "Visitor Feedback" }:
     },
   });
 
-  // Add comment mutation
-  const addCommentMutation = useMutation({
+  // Get comments for this section
+  const { data: comments } = useQuery({
+    queryKey: ["comments", section],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("visitor_comments")
+        .select("*")
+        .eq("section", section)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      return data as Comment[];
+    },
+  });
+
+  // Submit comment mutation
+  const submitCommentMutation = useMutation({
+    mutationFn: async () => {
+      setIsSubmitting(true);
+      
+      const { error } = await supabase
+        .from("visitor_comments")
+        .insert([{ name, comment, section }]);
+        
+      if (error) throw error;
+      
+      return true;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Thank you!",
+        description: "Your comment has been submitted.",
+      });
+      
+      setComment("");
+      queryClient.invalidateQueries({ queryKey: ["comments", section] });
+      setIsSubmitting(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to submit your comment. Please try again.",
+        variant: "destructive",
+      });
+      
+      console.error("Error submitting comment:", error);
+      setIsSubmitting(false);
+    },
+  });
+
+  // Submit rating mutation
+  const submitRatingMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
-        .from('visitor_comments')
-        .insert([
-          { name, comment, section }
-        ]);
-      
+        .from("visitor_ratings")
+        .insert([{ rating, section }]);
+        
       if (error) throw error;
+      
+      return true;
     },
     onSuccess: () => {
       toast({
-        title: "Comment Added",
+        title: "Rating submitted",
         description: "Thank you for your feedback!",
       });
-      setName("");
-      setComment("");
-      refetchComments();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to add comment: " + error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Add rating mutation
-  const addRatingMutation = useMutation({
-    mutationFn: async (rating: number) => {
-      const { error } = await supabase
-        .from('visitor_ratings')
-        .insert([
-          { rating, section }
-        ]);
       
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Rating Submitted",
-        description: "Thank you for rating this section!",
-      });
-      refetchRatings();
+      queryClient.invalidateQueries({ queryKey: ["ratings", section, "average"] });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to submit rating: " + error.message,
+        description: "Failed to submit your rating. Please try again.",
         variant: "destructive",
       });
-    }
+      
+      console.error("Error submitting rating:", error);
+    },
   });
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !comment.trim()) {
+    
+    if (!user && !name) {
       toast({
-        title: "Missing Information",
-        description: "Please provide both your name and comment",
+        title: "Name required",
+        description: "Please enter your name or sign in to submit a comment.",
         variant: "destructive",
       });
       return;
     }
-    addCommentMutation.mutate();
+    
+    if (!comment.trim()) {
+      toast({
+        title: "Comment required",
+        description: "Please enter a comment.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    submitCommentMutation.mutate();
   };
 
-  const handleRating = (value: number) => {
-    setRating(value);
-    addRatingMutation.mutate(value);
+  const handleRatingSubmit = (newRating: number) => {
+    setRating(newRating);
+    submitRatingMutation.mutate();
+  };
+
+  const renderStars = () => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`h-6 w-6 cursor-pointer transition-colors ${
+          i < rating ? "fill-amber-400 text-amber-400" : "text-slate-500"
+        }`}
+        onClick={() => handleRatingSubmit(i + 1)}
+      />
+    ));
   };
 
   return (
     <Card className="bg-slate-800/50 border-amber-900/30 text-slate-100">
       <CardHeader>
-        <CardTitle className="text-amber-400">{title}</CardTitle>
+        <CardTitle className="text-amber-400 flex items-center gap-2">
+          <MessageSquare className="h-5 w-5" /> {title}
+        </CardTitle>
         <CardDescription className="text-slate-300">
           Share your thoughts or rate this section
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Rating Section */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-amber-300">Rate this section</h4>
-            {ratingData && (
-              <span className="text-sm flex items-center text-amber-200">
-                <StarIcon className="h-4 w-4 mr-1 fill-amber-400 text-amber-400" />
-                {ratingData.average} ({ratingData.count} {ratingData.count === 1 ? 'rating' : 'ratings'})
+            <div className="flex items-center gap-1 text-slate-300">
+              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+              <span className="font-medium text-amber-300">
+                {averageRating?.average || "0.0"}
               </span>
-            )}
+              <span className="text-sm text-slate-400">
+                ({averageRating?.count || 0} ratings)
+              </span>
+            </div>
+            <div className="flex gap-1">{renderStars()}</div>
           </div>
-          <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <button
-                key={value}
-                type="button"
-                className="p-1 focus:outline-none"
-                onClick={() => handleRating(value)}
-                onMouseEnter={() => setHoveredRating(value)}
-                onMouseLeave={() => setHoveredRating(0)}
-              >
-                <Star 
-                  className={`h-6 w-6 ${
-                    (hoveredRating ? value <= hoveredRating : value <= rating)
-                      ? "fill-amber-400 text-amber-400"
-                      : "text-slate-400"
-                  }`} 
+          <div className="border-t border-amber-900/20 pt-4">
+            <form onSubmit={handleCommentSubmit} className="space-y-4">
+              {!user && (
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-slate-200">Your Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your name"
+                    className="bg-slate-700/50 border-amber-900/20 text-slate-100"
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="comment" className="text-slate-200">Your Comment</Label>
+                <Textarea
+                  id="comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Share your feedback..."
+                  className="min-h-[100px] bg-slate-700/50 border-amber-900/20 text-slate-100"
                 />
-              </button>
-            ))}
+              </div>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {isSubmitting ? "Submitting..." : "Submit Comment"}
+              </Button>
+            </form>
           </div>
         </div>
 
-        {/* Comment Form */}
-        <form onSubmit={handleSubmitComment} className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-amber-300" htmlFor="name">Your Name</Label>
-            <Input
-              id="name"
-              className="bg-slate-700/70 border-amber-900/30 text-slate-100 placeholder:text-slate-400"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-amber-300" htmlFor="comment">Your Comment</Label>
-            <Textarea
-              id="comment"
-              className="bg-slate-700/70 border-amber-900/30 text-slate-100 placeholder:text-slate-400 min-h-24"
-              placeholder="Share your thoughts on this section..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-          </div>
-          <Button 
-            type="submit" 
-            className="bg-amber-600 hover:bg-amber-700 text-white"
-            disabled={addCommentMutation.isPending}
-          >
-            {addCommentMutation.isPending ? "Submitting..." : "Submit Comment"}
-          </Button>
-        </form>
-
-        {/* Display Comments */}
         {comments && comments.length > 0 && (
-          <div className="mt-8">
-            <h4 className="font-medium text-amber-300 flex items-center gap-2 mb-4">
-              <MessageSquare className="h-4 w-4" /> Visitor Comments
-            </h4>
-            <div className="space-y-4">
+          <div className="space-y-4 pt-2">
+            <h3 className="text-slate-200 font-medium">Recent Comments</h3>
+            <div className="space-y-3">
               {comments.map((comment) => (
-                <div key={comment.id} className="bg-slate-700/30 rounded-lg p-4 border border-amber-900/20">
-                  <div className="flex justify-between items-start mb-2">
-                    <h5 className="font-medium text-amber-200">{comment.name}</h5>
+                <div
+                  key={comment.id}
+                  className="border border-amber-900/20 rounded-md p-3 bg-slate-700/30"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-amber-300" />
+                      <span className="font-medium text-amber-200">
+                        {comment.name}
+                      </span>
+                    </div>
                     <span className="text-xs text-slate-400">
                       {new Date(comment.created_at).toLocaleDateString()}
                     </span>

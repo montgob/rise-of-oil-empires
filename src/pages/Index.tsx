@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
+import { ProfileButton } from "@/components/ProfileButton";
 import CompanyProfile from "@/components/CompanyProfile";
 import OilMap from "@/components/OilMap";
 import TimelineComponent from "@/components/TimelineComponent";
@@ -38,23 +39,28 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100">
-      <header className="pt-8 pb-6 px-4 md:px-8 lg:px-16 text-center">
-        <motion.h1 
-          className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 text-amber-400"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          The Rise of Oil Empires
-        </motion.h1>
-        <motion.p 
-          className="text-xl text-amber-100/80 max-w-3xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-        >
-          How a handful of enterprises controlled the global oil industry at the dawn of the 20th century
-        </motion.p>
+      <header className="py-4 px-4 md:px-8 lg:px-16 flex flex-col md:flex-row md:items-center justify-between">
+        <div className="text-center md:text-left mb-4 md:mb-0">
+          <motion.h1 
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 text-amber-400"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            The Rise of Oil Empires
+          </motion.h1>
+          <motion.p 
+            className="text-xl text-amber-100/80 max-w-3xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            How a handful of enterprises controlled the global oil industry
+          </motion.p>
+        </div>
+        <div className="flex justify-center md:justify-end">
+          <ProfileButton />
+        </div>
       </header>
 
       <main className="container mx-auto px-4 pb-16">
