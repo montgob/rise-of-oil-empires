@@ -9,7 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      oil_companies: {
+        Row: {
+          control_method: string
+          created_at: string
+          description: string
+          founded: string | null
+          icon: string
+          id: string
+          name: string
+          region: string
+        }
+        Insert: {
+          control_method: string
+          created_at?: string
+          description: string
+          founded?: string | null
+          icon: string
+          id?: string
+          name: string
+          region: string
+        }
+        Update: {
+          control_method?: string
+          created_at?: string
+          description?: string
+          founded?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          region?: string
+        }
+        Relationships: []
+      }
+      visitor_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          name: string
+          section: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          name: string
+          section: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          name?: string
+          section?: string
+        }
+        Relationships: []
+      }
+      visitor_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+          section: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+          section: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+          section?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

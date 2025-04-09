@@ -16,10 +16,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import { Toaster } from "@/components/ui/toaster";
 import CompanyProfile from "@/components/CompanyProfile";
 import OilMap from "@/components/OilMap";
 import TimelineComponent from "@/components/TimelineComponent";
 import TransportationMethods from "@/components/TransportationMethods";
+import CompaniesData from "@/components/CompaniesData";
+import FeedbackSection from "@/components/FeedbackSection";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -56,7 +59,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 pb-16">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8">
             <TabsTrigger value="overview" className="text-sm md:text-base">
               Overview
             </TabsTrigger>
@@ -68,6 +71,9 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="timeline" className="text-sm md:text-base">
               Timeline
+            </TabsTrigger>
+            <TabsTrigger value="data" className="text-sm md:text-base">
+              Data & Feedback
             </TabsTrigger>
           </TabsList>
 
@@ -198,18 +204,28 @@ const Index = () => {
                 </div>
               </motion.div>
             </div>
+
+            <FeedbackSection section="overview" title="Overview Section Feedback" />
           </TabsContent>
 
           <TabsContent value="companies" className="space-y-6">
             <CompanyProfile />
+            <FeedbackSection section="companies" title="Companies Section Feedback" />
           </TabsContent>
 
           <TabsContent value="methods" className="space-y-6">
             <TransportationMethods />
+            <FeedbackSection section="methods" title="Methods Section Feedback" />
           </TabsContent>
 
           <TabsContent value="timeline" className="space-y-6">
             <TimelineComponent />
+            <FeedbackSection section="timeline" title="Timeline Section Feedback" />
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
+            <CompaniesData />
+            <FeedbackSection section="data" title="Overall Infographic Feedback" />
           </TabsContent>
         </Tabs>
       </main>
