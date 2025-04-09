@@ -1,15 +1,14 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Ship, 
-  PipeLine, 
   Train, 
   Building, 
   Droplet, 
   Factory, 
   Info
 } from "lucide-react";
+import { PipeLine } from "@/components/ui/PipeLine";
 
 const regions = [
   {

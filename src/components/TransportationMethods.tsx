@@ -1,11 +1,9 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Ship, 
-  PipeLine, 
   Train, 
   Building, 
   Droplet, 
@@ -13,6 +11,7 @@ import {
   Banknote,
   Factory
 } from "lucide-react";
+import { PipeLine } from "@/components/ui/PipeLine";
 
 const methodData = [
   {

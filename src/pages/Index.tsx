@@ -6,12 +6,12 @@ import {
   Ship, 
   Droplet, 
   Train, 
-  PipeLine, 
   ChevronDown, 
   ChevronUp,
   Banknote,
   Route
 } from "lucide-react";
+import { PipeLine } from "@/components/ui/PipeLine";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

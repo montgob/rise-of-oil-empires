@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -6,13 +5,13 @@ import {
   Droplet, 
   Building, 
   Ship, 
-  PipeLine, 
   Train, 
   Factory, 
   ChevronDown,
   ChevronUp,
   Banknote
 } from "lucide-react";
+import { PipeLine } from "@/components/ui/PipeLine";
 
 type CompanyData = {
   id: string;

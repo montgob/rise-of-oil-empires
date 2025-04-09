@@ -1,17 +1,16 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Droplet, 
   Building, 
   Ship, 
-  PipeLine, 
   Train, 
   Factory, 
   ChevronRight,
   ChevronLeft,
   Calendar
 } from "lucide-react";
+import { PipeLine } from "@/components/ui/PipeLine";
 
 const timelineEvents = [
   {
