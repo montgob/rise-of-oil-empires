@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from 'react';
 import { 
   Building, 
   Factory, 
@@ -79,7 +78,7 @@ const Index = () => {
               Timeline
             </TabsTrigger>
             <TabsTrigger value="data" className="text-sm md:text-base">
-              Data & Feedback
+              Data
             </TabsTrigger>
           </TabsList>
 
