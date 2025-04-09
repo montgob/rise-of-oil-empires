@@ -25,6 +25,13 @@ interface Comment {
   created_at: string;
 }
 
+interface Rating {
+  id: string;
+  rating: number;
+  section: string;
+  created_at: string;
+}
+
 interface FeedbackSectionProps {
   section: string;
   title?: string;
@@ -63,7 +70,7 @@ export default function FeedbackSection({ section, title = "Visitor Feedback" }:
       if (error) throw error;
       
       if (data && data.length > 0) {
-        const total = data.reduce((sum, curr) => sum + curr.rating, 0);
+        const total = data.reduce((sum, curr: Rating) => sum + curr.rating, 0);
         return {
           average: (total / data.length).toFixed(1),
           count: data.length

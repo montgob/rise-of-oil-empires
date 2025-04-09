@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Building, Factory, Ship, Droplet, PipeLine } from "lucide-react";
+import { Building, Factory, Ship, Droplet } from "lucide-react";
 import { motion } from "framer-motion";
+import { PipeLine } from "@/components/ui/PipeLine";
 import {
   Table,
   TableBody,
